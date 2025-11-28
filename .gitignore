@@ -1,0 +1,60 @@
+# ------------------------
+# 通用系统文件
+# ------------------------
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+*.bak
+
+# ------------------------
+# IntelliJ IDEA / VSCode
+# ------------------------
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+
+# ------------------------
+# Rust
+# ------------------------
+/target/
+/Cargo.lock   # 库项目可忽略，应用项目可保留
+
+# ------------------------
+# Python
+# ------------------------
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+.eggs/
+dist/
+build/
+.venv/
+env/
+venv/
+
+# ------------------------
+# Java
+# ------------------------
+# 编译产物
+*.class
+*.jar
+*.war
+*.ear
+
+# 构建目录
+/out/
+/build/
+/target/
+
+# ------------------------
+# Xcode (如有 iOS/macOS 组件)
+# ------------------------
+xcuserdata/
+*.xcuserstate
+*.xcworkspace
+DerivedData/
