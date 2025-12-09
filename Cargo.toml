@@ -9,3 +9,16 @@ anyhow = "1.0"
 async-trait = "0.1"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+
+# TLS (rustls) for TLS outbound
+tokio-rustls = "0.23"
+rustls = "0.21"
+webpki-roots = "0.22"
+
+shadowsocks = "1.23"
+# Trojan/VMess/Hysteria：通常没有单一“官方”crate，建议使用：
+quinn = { version = "0.11", optional = true } # QUIC (Hysteria)
+
+# Utility
+tokio-util = "0.7"
+bytes = "1"

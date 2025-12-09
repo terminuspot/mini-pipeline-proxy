@@ -8,7 +8,7 @@ use anyhow::Result;
 use std::sync::Arc;
 use tokio::io::{copy_bidirectional, AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
-use crate::proxy::outbound::tcp_impl::TcpConnection;
+use crate::proxy::outbound::direct::DirectConnection;
 
 pub struct Pipeline {
     router: Arc<dyn Router>,
@@ -47,7 +47,7 @@ impl Pipeline {
         // Try downcast to TcpConnection to use copy_bidirectional for performance.
         // If downcast fails, fallback to manual relay using Connection trait methods.
         let mut used_direct = false;
-        if let Some(tcp_conn) = outbound.as_any().downcast_mut::<TcpConnection>() {
+        if let Some(tcp_conn) = outbound.as_any().downcast_mut::<DirectConnection>() {
             used_direct = true;
             // perform bidirectional copy between inbound and tcp_conn.stream
             // let (mut ri, mut wi) = inbound.split();
@@ -96,5 +96,29 @@ impl Pipeline {
         }
 
         Ok(())
+    }
+
+    /// 专门为 UDP 或需要手动控制数据流的场景提供的方法
+    /// 执行：Middleware(Before) -> Router -> Outbound Connect
+    pub async fn create_outbound_connection(&self, ctx: &mut ConnectionContext) -> Result<Box<dyn Connection>> {
+        // 1. Run "Before" Middlewares
+        for m in &self.middlewares {
+            m.before(ctx).await?;
+        }
+
+        // 2. Route selection
+        let selected_tag = self.router.select_outbound(ctx).await?;
+        ctx.outbound_tag = selected_tag;
+
+        // 3. Connect outbound
+        // 注意：OutboundManager 内部应该根据 ctx (比如 metadata 或 protocol) 决定建立 TCP 还是 UDP 连接
+        // 或者 Router 选出的 tag 对应的 outbound 本身支持 UDP
+        let conn = self.outbound_mgr.connect_box(ctx).await?;
+
+        // 4. "After" middlewares are typically for logging results after the session ends.
+        // For manually managed connections, the caller might need to handle logging,
+        // or we simplify and just return the connection here.
+
+        Ok(conn)
     }
 }
